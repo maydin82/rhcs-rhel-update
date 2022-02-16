@@ -1,0 +1,22 @@
+### WARNING THIS WILL UPDATE ALL SYSTEMS
+- name: Start RHEL OS update
+  hosts: all
+  serial: 1
+  become: true
+  vars:
+    docker_exec_cmd: "podman exec ceph-mon-{{ groups['mons'][0]  }}"
+  tasks:
+    - name: Set the flags for containerized
+      command: "{{ docker_exec_cmd }} ceph osd set {{ item }}"
+      loop:
+        - noout
+      when:
+        - ansible_hostname in groups['mons'][0]
+    - name: Update OS for containerized deployment
+      import_tasks: yum_update_and_reboot.yml
+    - name: Set the flags for containerized
+      command: "{{ docker_exec_cmd }} ceph osd set {{ item }}"
+      loop:
+        - noout
+      when:
+        - ansible_hostname in groups['mons'][0]
